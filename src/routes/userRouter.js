@@ -8,7 +8,6 @@ userRouter.post('/create-user', (req, res) => {
   const user = req.body.user;
 
   // TODO: Save User in the Database
-  
 
   res.send('user created');
 });
