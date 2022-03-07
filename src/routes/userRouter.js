@@ -28,6 +28,7 @@ userRouter.post('/create-user', (req, res) => {
       firstName: savedUser.firstName,
       lastName: savedUser.lastName,
       email: savedUser.email,
+      isAdmin: savedUser.isAdmin,
     }
   
     res.send(cleanSavedUser);
@@ -51,6 +52,7 @@ userRouter.post('/sign-in', async (req, res) => {
     firstName: foundUser.firstName,
     lastName: foundUser.lastName,
     email: foundUser.email,
+    isAdmin: foundUser.isAdmin,
   }
   
   // return that user in the response
