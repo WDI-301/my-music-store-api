@@ -1,6 +1,8 @@
 const express = require('express');
 const { UserModel } = require('../models/UserModel');
 
+const jwt = require('jsonwebtoken');
+
 
 const userRouter = express.Router();
 
@@ -8,7 +10,7 @@ userRouter.post('/create-user', (req, res) => {
  
   const user = req.body.user;
 
-  // TODO: Save User in the Database
+  // Save User in the Database
 
   // 3. use the Data Model we created to create mongo db documents
   const newUser = new UserModel({
@@ -37,15 +39,22 @@ userRouter.post('/create-user', (req, res) => {
 });
 
 userRouter.post('/sign-in', async (req, res) => {
-
- 
   const userCredentials = req.body.userCredentials;
 
   // get the user from the Database
   // verify that the credentials match
   const foundUser = await UserModel.findOne({ email: userCredentials.email, password: userCredentials.password })
+
+  if(!foundUser){
+    throw new Error("User not found")
+  }
   
-  
+  // Create JWT
+  const token = jwt.sign({
+    userId: foundUser.id,
+    iat: Date.now(),
+  }, "secretPassword");
+
   // clean the fields that we dont need to provide to the front end
   const cleanFoundUser = {
     id: foundUser.id,
@@ -54,9 +63,16 @@ userRouter.post('/sign-in', async (req, res) => {
     email: foundUser.email,
     isAdmin: foundUser.isAdmin,
   }
+
+  // create JWT token to give to the user makign the request.
+
+  res.cookie('session_token', token, { secure: false, httpOnly: true });
   
-  // return that user in the response
-  res.send(cleanFoundUser);
+  res.send({user: cleanFoundUser});
+});
+
+userRouter.get('/sign-out', (req, res) => {
+  res.clearCookie('session_token').send('Sign out successfully');
 });
 
 module.exports = userRouter;
