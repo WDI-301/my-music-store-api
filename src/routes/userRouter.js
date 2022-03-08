@@ -1,79 +1,17 @@
 const express = require('express');
-const { UserModel } = require('../models/UserModel');
-
+const UserModel = require('../models/UserModel');
 const jwt = require('jsonwebtoken');
+const UserService = require('../services/UserService');
+
 
 
 const userRouter = express.Router();
 
-userRouter.post('/create-user', (req, res) => {
- 
-  const user = req.body.user;
+userRouter.post('/create-user', UserService.createUser);
 
-  // Save User in the Database
+userRouter.post('/sign-in',  UserService.signIn);
 
-  // 3. use the Data Model we created to create mongo db documents
-  const newUser = new UserModel({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    password: user.password,
-  });
-  
-  // 4. save your user as a mongo db document.
-  newUser.save().then((savedUser) => {
-    console.log('savedUser: ', savedUser);
-
-    // A user object without the extra fields
-    const cleanSavedUser = {
-      id: savedUser.id,
-      firstName: savedUser.firstName,
-      lastName: savedUser.lastName,
-      email: savedUser.email,
-      isAdmin: savedUser.isAdmin,
-    }
-  
-    res.send(cleanSavedUser);
-  });
-
-});
-
-userRouter.post('/sign-in', async (req, res) => {
-  const userCredentials = req.body.userCredentials;
-
-  // get the user from the Database
-  // verify that the credentials match
-  const foundUser = await UserModel.findOne({ email: userCredentials.email, password: userCredentials.password })
-
-  if(!foundUser){
-    throw new Error("User not found")
-  }
-  
-  // Create JWT
-  const token = jwt.sign({
-    userId: foundUser.id,
-    iat: Date.now(),
-  }, "secretPassword");
-
-  // clean the fields that we dont need to provide to the front end
-  const cleanFoundUser = {
-    id: foundUser.id,
-    firstName: foundUser.firstName,
-    lastName: foundUser.lastName,
-    email: foundUser.email,
-    isAdmin: foundUser.isAdmin,
-  }
-
-  // create JWT token to give to the user makign the request.
-
-  res.cookie('session_token', token, { secure: false, httpOnly: true });
-  
-  res.send({user: cleanFoundUser});
-});
-
-userRouter.get('/sign-out', (req, res) => {
-  res.clearCookie('session_token').send('Sign out successfully');
-});
+userRouter.get('/sign-out', UserService.signOut)
 
 module.exports = userRouter;
 

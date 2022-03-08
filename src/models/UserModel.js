@@ -16,9 +16,5 @@ const userSchema = new mongoose.Schema({
 // 2. Create our Data Model
 const UserModel = mongoose.model('User', userSchema);
 
-const UserController = {
-  UserModel,
-};
-
-module.exports = UserController;
+module.exports = UserModel;
 
