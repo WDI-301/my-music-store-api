@@ -52,3 +52,23 @@ app.use(productRouter);
 app.listen(5100, () => {
   console.log('MyMusicStore API server is listening on port 5100')
 })
+
+
+// ERROR HANDLER MIDDLEWARE
+app.use((error, req, res, next) => {
+  console.error(err);
+
+  if(error.message === "User is not logged in"){
+    res.status(401).send({error: "User is not logged in"});
+    return;
+  }
+  
+  if(error.message === "User is not an admin"){
+    res.status(401).send({error: "User is not authorized"});
+    return;
+  }
+
+  res.status(500).send({
+    error: "An error happened",
+  })
+});

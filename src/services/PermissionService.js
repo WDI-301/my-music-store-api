@@ -11,7 +11,7 @@ const verifyAdminPermission = (req) => {
 
   // Now Were checking permission
   if(!req.user.isAdmin){
-    throw new Error('User is not an admin!!')
+    throw new Error('User is not an admin')
   }
   return;
 };

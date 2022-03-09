@@ -2,8 +2,8 @@ const jwt = require('jsonwebtoken');
 const UserModel = require("../models/UserModel");
 
 
-const createUser = (req, res) => {
- 
+const createUser = (req, res, next) => {
+ try {
   const user = req.body.user;
 
   // Save User in the Database
@@ -31,6 +31,9 @@ const createUser = (req, res) => {
   
     res.send(cleanSavedUser);
   });
+}catch(error){
+  next(error);
+}
 
 };
 
@@ -38,37 +41,41 @@ const createUser = (req, res) => {
 
 
 
-const signIn = async (req, res) => {
-  const userCredentials = req.body.userCredentials;
-
-  // get the user from the Database
-  // verify that the credentials match
-  const foundUser = await UserModel.findOne({ email: userCredentials.email, password: userCredentials.password })
-
-  if(!foundUser){
-    throw new Error("User not found")
-  }
+const signIn = async (req, res, next) => {
+  try {
+    const userCredentials = req.body.userCredentials;
   
-  // Create JWT
-  const token = jwt.sign({
-    userId: foundUser.id,
-    iat: Date.now(),
-  }, process.env.AUTH_SECRET_KEY);
-
-  // clean the fields that we dont need to provide to the front end
-  const cleanFoundUser = {
-    id: foundUser.id,
-    firstName: foundUser.firstName,
-    lastName: foundUser.lastName,
-    email: foundUser.email,
-    isAdmin: foundUser.isAdmin,
-  }
-
-  // create JWT token to give to the user makign the request.
-
-  res.cookie('session_token', token, { secure: false, httpOnly: true });
+    // get the user from the Database
+    // verify that the credentials match
+    const foundUser = await UserModel.findOne({ email: userCredentials.email, password: userCredentials.password })
   
-  res.send({user: cleanFoundUser});
+    if(!foundUser){
+      throw new Error("User not found")
+    }
+    
+    // Create JWT
+    const token = jwt.sign({
+      userId: foundUser.id,
+      iat: Date.now(),
+    }, process.env.AUTH_SECRET_KEY);
+  
+    // clean the fields that we dont need to provide to the front end
+    const cleanFoundUser = {
+      id: foundUser.id,
+      firstName: foundUser.firstName,
+      lastName: foundUser.lastName,
+      email: foundUser.email,
+      isAdmin: foundUser.isAdmin,
+    }
+  
+    // create JWT token to give to the user makign the request.
+  
+    res.cookie('session_token', token, { secure: false, httpOnly: true });
+    
+    res.send({user: cleanFoundUser});
+  } catch (error){
+    next(error)
+  }
 };
 
 const signOut = (req, res) => {
